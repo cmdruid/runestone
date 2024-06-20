@@ -2,6 +2,8 @@
 
 A simple library for crafting runestones, written in typescript.
 
+This library is under heavy development.
+
 ## Resources
 
 **Runes Handbook**  
