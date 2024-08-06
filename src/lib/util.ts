@@ -3,6 +3,8 @@ import { FieldType } from '@/types.js'
 
 import CONST from '@/const.js'
 
+const { _0n, _2n, _26n } = CONST.BIG
+
 export function lookup_tag (tag : FieldType) {
   const tags = CONST.FIELD_TAGS
   const idx  = tags.findIndex(e => e === tag)
@@ -13,29 +15,49 @@ export function lookup_tag (tag : FieldType) {
 }
 
 export function encode_base26 (str : string) {
-  console.log(str)
-  throw 'not implemented'
-  return BigInt(0)
+  str = str.toUpperCase()
+  let big = _0n
+
+  for (const char of str) {
+    if (char >= 'A' && char <= 'Z') {
+        big = big * _26n + BigInt(char.charCodeAt(0) - 'A'.charCodeAt(0))
+    } else {
+      throw new Error('Input string contains non-alphabetic characters: ' + str)
+    }
+  }
+  return big
 }
 
 export function decode_base26 (big : bigint) {
-  console.log(big)
-  throw 'not implemented'
-  return ''
+  let result = ''
+  while (big > _0n) {
+    const remainder = big % _26n
+    const charCode  = Number(remainder) + 'A'.charCodeAt(0)
+    result = String.fromCharCode(charCode) + result
+    big = big / _26n
+  }
+  return result || 'A'
 }
 
 export function encode_bitfield (bin : string) : bigint {
-  const bits = bin.split('').map(e => {
-    if (e === '0') return 0
-    if (e === '1') return 1
-    throw new Error('invalid character in binary string: ' + e)
-  })
-  throw 'not implemented'
-  return BigInt(bits[0])
+  let result = _0n
+  for (const char of bin) {
+    if (char === '0' || char === '1') {
+      result = result * _2n + BigInt(Number(char))
+    } else {
+      throw new Error('Input string contains non-alphabetic characters: ' + bin)
+    }
+  }
+  return result
 }
 
-export function decode_bitfield (big : bigint) {
-  console.log(big)
-  throw 'not implemented'
-  return '0101'
+export function decode_bitfield (big : bigint, pad = 32) {
+  if (big === _0n) return '0'
+  let bin = ''
+  while (big > _0n) {
+    const remainder = big % _2n
+    bin = remainder.toString() + bin
+    big = big / _2n
+  }
+  return bin.padEnd(pad, '0')
 }

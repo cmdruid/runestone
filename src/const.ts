@@ -26,7 +26,10 @@ const FIELD_TAGS  = [ ...FIELD_MAP.values() ]
 const BIG = {
   _n1n : BigInt(-1),
   _0n  : BigInt(0),
+  _1n  : BigInt(1),
+  _2n  : BigInt(2),
   _7n  : BigInt(7),
+  _26n : BigInt(26),
   _32n : BigInt(32),
   _MAX : BigInt(0xFFFFFFFF)
 }
