@@ -2,8 +2,11 @@ import { FieldType } from './types.js'
 
 const FIELD_MAP = new Map<number, FieldType>([
   [ 0,   'body'         ],
+  [ 1,   'divisibility' ],
   [ 2,   'flags'        ],
+  [ 3,   'spacers'      ],
   [ 4,   'rune'         ],
+  [ 5,   'symbol'       ],
   [ 6,   'premine'      ],
   [ 8,   'cap'          ],
   [ 10,  'amount'       ],
@@ -14,9 +17,6 @@ const FIELD_MAP = new Map<number, FieldType>([
   [ 20,  'mint'         ],
   [ 22,  'pointer'      ],
   [ 126, 'cenotaph'     ],
-  [ 1,   'divisibility' ],
-  [ 3,   'spacers'      ],
-  [ 5,   'symbol'       ],
   [ 127, 'nop'          ]
 ])
 

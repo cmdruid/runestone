@@ -9,7 +9,7 @@ export interface RuneID {
   idx    : number
 }
 
-export type RuneField = [ tag : FieldType, value : bigint ]
+export type RuneField = [ tag : FieldType, value : bigint | bigint[] ]
 
 export interface RuneMessage {
   fields : RuneField[]
@@ -17,19 +17,19 @@ export interface RuneMessage {
 }
 
 export interface RuneTerms {
-  amount ?: Uint8Array
-  cap    ?: Uint8Array
-  height ?: Uint8Array
-  offset ?: Uint8Array
+  amount ?: bigint
+  cap    ?: bigint
+  height ?: [ min : number, max : number ]
+  offset ?: [ min : number, max : number ]
 }
 
 export interface RuneEtching {
-  divisibility : Uint8Array
-  premine      : Uint8Array
-  rune         : Uint8Array
-  spacers      : Uint8Array
-  symbol       : Uint8Array
-  terms        : Uint8Array
+  divisibility ?: number
+  premine      ?: bigint
+  rune         ?: string
+  spacers      ?: string
+  symbol       ?: string
+  terms        ?: RuneTerms
 }
 
 export interface RuneStone {

@@ -43,11 +43,17 @@ function decode_rune_message (
 
     if (tag === null) continue
 
-    const val = varints.at(++idx)
-
-    assert.exists(val, 'value does not exist for field: ' + tag)
-
-    fields.push([ tag, val ])
+    if (tag === 'mint') {
+      const height = varints.at(++idx)
+      const index  = varints.at(++idx)
+      assert.exists(height, 'height does not exist for mint field')
+      assert.exists(index,  'index does not exist for mint field')
+      fields.push([ 'mint', [ height, index ] ])
+    } else {
+      const val = varints.at(++idx)
+      assert.exists(val, 'value does not exist for field: ' + tag)
+      fields.push([ tag, val ])
+    }
   }
 
   const ebytes = varints.slice(idx)
