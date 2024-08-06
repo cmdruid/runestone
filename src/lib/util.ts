@@ -14,11 +14,13 @@ export function lookup_tag (tag : FieldType) {
 
 export function encode_base26 (str : string) {
   console.log(str)
+  throw 'not implemented'
   return BigInt(0)
 }
 
 export function decode_base26 (big : bigint) {
   console.log(big)
+  throw 'not implemented'
   return ''
 }
 
@@ -28,10 +30,12 @@ export function encode_bitfield (bin : string) : bigint {
     if (e === '1') return 1
     throw new Error('invalid character in binary string: ' + e)
   })
+  throw 'not implemented'
   return BigInt(bits[0])
 }
 
 export function decode_bitfield (big : bigint) {
   console.log(big)
+  throw 'not implemented'
   return '0101'
 }
