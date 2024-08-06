@@ -1,39 +1,48 @@
+import CONST from '@/const.js'
+
+const { _0n, _7n, _32n, _n1n } = CONST.BIG
+
 export function encode_LEB128 (
-  value : number
-) {
-  value |= 0
-  const result = []
+  value : number | bigint
+) : number[] {
+  if (typeof value === 'number') {
+    value = BigInt(value)
+  }
+  const result : number[] = []
   while (true) {
-    const byte_ = value & 0x7f
-    value >>= 7
+    const byte = Number(value & 0x7Fn)
+    value >>= _7n
     if (
-      (value === 0  && (byte_ & 0x40) === 0) ||
-      (value === -1 && (byte_ & 0x40) !== 0)
+      (value === _0n  && (byte & 0x40) === 0) ||
+      (value === _n1n && (byte & 0x40) !== 0)
     ) {
-      result.push(byte_)
+      result.push(byte)
       return result
     }
-    result.push(byte_ | 0x80)
+    result.push(byte | 0x80)
   }
 }
 
 export function decode_LEB128 (
-  bytes : number[]
-) {
-  let result = 0
-  let shift  = 0
-  while (true) {
-    const byte = bytes.shift()
-    if (byte === undefined) {
-      throw new Error('byte stream ended abruptly')
-    }
-    result |= (byte & 0x7f) << shift
-    shift += 7
+  bytes : number[] | Uint8Array
+) : bigint {
+  let result = _0n
+  let shift  = _0n
+  for (let i = 0; i < bytes.length; i++) {
+    const byte = bytes[i]
+    result |= BigInt(byte & 0x7f) << shift
+    shift += _7n
     if ((0x80 & byte) === 0) {
-      if (shift < 32 && (byte & 0x40) !== 0) {
-        return result | (~0 << shift)
+      if (shift < _32n && (byte & 0x40) !== 0) {
+        return result | (~_0n << shift)
       }
       return result
     }
   }
+  throw new Error('byte stream ended abruptly')
+}
+
+export default {
+  encode : encode_LEB128,
+  decode : decode_LEB128
 }
