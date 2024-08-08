@@ -1,6 +1,6 @@
-import { Buff, Bytes }   from '@cmdcode/buff'
-import { decode_LEB128 } from '@/lib/leb.js'
-import { assert }        from '@/util/index.js'
+import { Buff, Bytes }  from '@cmdcode/buff'
+import { parse_LEB128 } from '@/lib/leb.js'
+import { assert }       from '@/util/index.js'
 
 import { decode_base26, decode_bitfield } from './util.js'
 
@@ -9,7 +9,6 @@ import {
   RuneEdict,
   RuneEtching,
   RuneField,
-  RuneID,
   RuneMessage,
   RuneStone,
   RuneTerms
@@ -23,20 +22,16 @@ export function decode_runestone (
   runestone : Bytes
 ) : RuneStone {
   const bytes = Buff.bytes(runestone)
-  const nums  = [ ...bytes ]
-  const vars  = []
-  while (nums.length !== 0) {
-    const int = decode_LEB128(nums)
-    vars.push(int)
-  }
-  const { fields, edicts } = decode_rune_message(vars)
-  const etching = decode_etching(fields)
-  const mint    = decode_mint(fields)
-  const pointer = decode_pointer(fields)
-  return { edicts, etching, mint, pointer }
+  const ints  = parse_LEB128(bytes)
+  const msg   = decode_rune_msg(ints)
+  const stone = { edicts: msg.edicts }
+  decode_etching(stone, msg.fields)
+  decode_mint(stone, msg.fields)
+  decode_pointer(stone, msg.fields)
+  return stone
 }
 
-function decode_rune_message (
+function decode_rune_msg (
   varints : bigint[]
 ) : RuneMessage {
   const fields : RuneField[] = []
@@ -47,7 +42,7 @@ function decode_rune_message (
   for (idx = 0; idx < varints.length; idx++) {
     const fbyte = varints[idx]
 
-    if (fbyte === _0n) break
+    if (fbyte === _0n) { idx++; break }
 
     const tag = decode_field_tag(fbyte)
 
@@ -74,7 +69,7 @@ function decode_rune_message (
     const edict : RuneEdict = {
       id  : { height: Number(ebytes[0]), idx: Number(ebytes[1]) },
       amt : ebytes[2],
-      out : Number(ebytes[2])
+      out : Number(ebytes[3])
     }
     edicts.push(edict)
   }
@@ -101,7 +96,10 @@ function decode_field_tag (
   return tag
 }
 
-function decode_etching (fields : RuneField[]) {
+function decode_etching (
+  stone  : RuneStone,
+  fields : RuneField[]
+) : void {
   const etching : RuneEtching = {}
   const divisibility = fields.find(e => e[0] === 'divisibility')
   const premine      = fields.find(e => e[0] === 'premine')
@@ -128,11 +126,19 @@ function decode_etching (fields : RuneField[]) {
     assert.bigint(symbol)
     etching.symbol = Buff.big(symbol).str
   }
-  etching.terms = decode_terms(fields)
-  return etching
+  // Decode and add terms, if present.
+  decode_terms(etching, fields)
+  // If etching has any fields defined:
+  if (Object.keys(etching).length > 0) {
+    // Set the etching field on the runestone.
+    stone.etching = etching
+  }
 }
 
-function decode_terms (fields : RuneField[]) {
+function decode_terms (
+  etching : RuneEtching,
+  fields  : RuneField[]
+) {
   const terms : RuneTerms = {}
   const amount       = fields.find(e => e[0] === 'amount')
   const cap          = fields.find(e => e[0] === 'cap')
@@ -160,22 +166,30 @@ function decode_terms (fields : RuneField[]) {
     assert.bigint(offset_end)
     terms.height = [ Number(offset_start), Number(offset_end) ]
   }
-  return terms
+  if (Object.keys(terms).length > 0) {
+    etching.terms = terms
+  }
 }
 
-function decode_mint (fields : RuneField[]) : RuneID | undefined {
+function decode_mint (
+  stone  : RuneStone,
+  fields : RuneField[]
+) : void {
   const res = fields.find(e => e[0] === 'mint')
-  if (res === undefined) return undefined
-  assert.big_array(res[1], 2)
-  const [ blk, idx ] = res[1]
-  return { height: Number(blk), idx: Number(idx) }
+  if (res !== undefined) {
+    assert.big_array(res[1], 2)
+    const [ b, i ] = res[1]
+    stone.mint = { height: Number(b), idx: Number(i) }
+  }
 }
 
 function decode_pointer (
+  stone  : RuneStone,
   fields : RuneField[]
-) : number | undefined {
+) : void {
   const res = fields.find(e => e[0] === 'pointer')
-  if (res === undefined) return undefined
-  assert.bigint(res[1])
-  return Number(res[1])
+  if (res !== undefined) {
+    assert.bigint(res[1])
+    stone.pointer = Number(res[1])
+  }
 }

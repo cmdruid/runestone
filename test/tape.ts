@@ -1,6 +1,8 @@
 import tape from 'tape'
 
+import basic_test from './src/basic.test.js'
+
 tape('Runestone Test Suite', t => {
-  t.comment('testing suite not implemented.')
+  basic_test(t)
   t.end()
 })
